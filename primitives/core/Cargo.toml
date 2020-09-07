@@ -53,6 +53,7 @@ libsecp256k1 = { version = "0.3.2", default-features = false, features = ["hmac"
 merlin = { version = "2.0", default-features = false, optional = true }
 
 sp-runtime-interface = { version = "2.0.0-rc6", default-features = false, path = "../runtime-interface" }
+libsm = { package = "cryptape-sm", git = "https://github.com/hammeWang/libsm.git", rev = "a85974c", optional = true }
 
 [dev-dependencies]
 sp-serializer = { version = "2.0.0-rc6", path = "../serializer" }
@@ -113,6 +114,7 @@ std = [
 	"futures/thread-pool",
 	"libsecp256k1/std",
 	"dyn-clonable",
+	"libsm",
 ]
 
 # This feature enables all crypto primitives for `no_std` builds like microcontrollers
@@ -129,4 +131,5 @@ full_crypto = [
 	"libsecp256k1",
 	"sp-runtime-interface/disable_target_static_assertions",
 	"merlin",
+	"libsm",
 ]
