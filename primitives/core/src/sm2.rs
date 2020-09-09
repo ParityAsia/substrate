@@ -21,7 +21,9 @@ use crate::crypto::{Public as TraitPublic, CryptoTypePublicPair, UncheckedFrom, 
 // use sp_runtime::traits::{Verify, Lazy, IdentifyAccount};
 #[cfg(feature = "full_crypto")]
 use sm2::signature::{Seckey, Pubkey};
-use sp_runtime_interface::pass_by::{PassBy, Codec};
+use sp_runtime_interface::pass_by::{PassBy, Codec,};
+
+// use sp_runtime_interface::pass_by::{PassByInner};
 // use crate::io;
 
 /// An identifier used to match public keys against sm2 keys
@@ -47,8 +49,13 @@ pub const CRYPTO_ID: CryptoTypeId = CryptoTypeId(*b"csm2");
 type Seed = [u8; 32];
 
 /// the SM2 conpressed key.
+#[cfg_attr(feature = "full_crypto",)]
 #[derive(Clone, Encode, Decode)]
 pub struct Public([u8; 33]);
+
+impl PassBy for Public {
+	type PassBy = Codec<Self>;
+}
 
 impl PartialOrd for Public {
 	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
@@ -70,6 +77,13 @@ impl PartialEq for Public {
 
 impl Eq for Public {}
 
+impl From<Public> for [u8; 32] {
+	fn from(x: Public) -> [u8; 32] {
+		let mut buf = [0u8; 32];
+		buf.copy_from_slice(&x.0[1..]);
+		buf
+	}
+}
 
 /// An error type for SS58 decoding.
 #[cfg(feature = "std")]
@@ -227,6 +241,7 @@ impl sp_std::hash::Hash for Public {
 }
 
 /// A signature
+#[cfg_attr(feature = "full_crypto",)]
 #[derive(Encode, Decode)]
 pub struct Signature([u8; 97]);
 
@@ -334,6 +349,10 @@ impl sp_std::hash::Hash for Signature {
 	fn hash<H: sp_std::hash::Hasher>(&self, state: &mut H) {
 		sp_std::hash::Hash::hash(&self.0[..], state);
 	}
+}
+
+impl PassBy for Signature {
+	type PassBy = Codec<Self>;
 }
 
 impl Signature {
@@ -544,7 +563,10 @@ impl CryptoType for Pair {
 // 	type Signer = Public;
 // 	fn verify<L: Lazy<[u8]>>(&self, mut msg: L, signer: &Public) -> bool {
 // 		let signer = signer.as_ref();
-// 		sm2_verify(self, msg.get(), signer)
+// 		// sm2_verify(self, msg.get(), signer)
+
+// 		let pk = Public::from_slice(self.into_sm2_pk());
+// 		Pair::verify(self, msg.get(), &pk)
 // 	}
 // }
 

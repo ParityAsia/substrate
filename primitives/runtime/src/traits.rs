@@ -26,7 +26,7 @@ use std::fmt::Display;
 use std::str::FromStr;
 #[cfg(feature = "std")]
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
-use sp_core::{self, Hasher, TypeId, RuntimeDebug};
+use sp_core::{self, Hasher, TypeId, RuntimeDebug, crypto::Public};
 use crate::codec::{Codec, Encode, Decode};
 use crate::transaction_validity::{
 	ValidTransaction, TransactionSource, TransactionValidity, TransactionValidityError,
@@ -78,6 +78,11 @@ impl IdentifyAccount for sp_core::ecdsa::Public {
 	fn into_account(self) -> Self { self }
 }
 
+impl IdentifyAccount for sp_core::sm2::Public {
+	type AccountId = Self;
+	fn into_account(self) -> Self { self }
+}
+
 /// Means of signature verification.
 pub trait Verify {
 	/// Type of the signer.
@@ -86,6 +91,15 @@ pub trait Verify {
 	///
 	/// Return `true` if signature is valid for the value.
 	fn verify<L: Lazy<[u8]>>(&self, msg: L, signer: &<Self::Signer as IdentifyAccount>::AccountId) -> bool;
+}
+
+impl Verify for sp_core::sm2::Signature {
+	type Signer = sp_core::sm2::Public;
+	fn verify<L: Lazy<[u8]>>(&self, mut msg: L, signer: &sp_core::sm2::Public) -> bool {
+		let signer = signer.as_ref();
+		let pk = sp_core::sm2::Public::from_slice(&self.into_sm2_pk());
+		sp_io::crypto::sm2_verify(self, msg.get(), &pk)
+	}
 }
 
 impl Verify for sp_core::ed25519::Signature {

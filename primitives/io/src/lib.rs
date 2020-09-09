@@ -42,7 +42,7 @@ use sp_core::{
 };
 
 use sp_core::{
-	crypto::KeyTypeId, ed25519, sr25519, ecdsa, H256, LogLevel,
+	crypto::KeyTypeId, ed25519, sr25519, ecdsa, sm2, H256, LogLevel,
 	offchain::{
 		Timestamp, HttpRequestId, HttpRequestStatus, HttpError, StorageKind, OpaqueNetworkState,
 	},
@@ -463,6 +463,14 @@ pub trait Crypto {
 		ed25519::Pair::verify(sig, msg, pub_key)
 	}
 
+	fn sm2_verify(
+		sig: &sm2::Signature,
+		msg: &[u8],
+		pub_key: &sm2::Public,
+	) -> bool {
+		sm2::Pair::verify(sig, msg, pub_key)
+	}
+
 	/// Register a `ed25519` signature for batch verification.
 	///
 	/// Batch verification must be enabled by calling [`start_batch_verify`].
@@ -701,6 +709,8 @@ pub trait Crypto {
 			.map_err(|_| EcdsaVerifyError::BadSignature)?;
 		Ok(pubkey.serialize_compressed())
 	}
+
+
 }
 
 /// Interface that provides functions for hashing with different algorithms.
