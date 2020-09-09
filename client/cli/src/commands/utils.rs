@@ -229,6 +229,9 @@ macro_rules! with_crypto_scheme {
 			$crate::CryptoScheme::Ed25519 => {
 				$method::<sp_core::ed25519::Pair, $($generics),*>($($params),*)
 			}
+			$crate::CryptoScheme::Sm2 => {
+				$method::<sp_core::sm2::Pair, $($generics),*>($($params),*)
+			}
 		}
 	};
 }

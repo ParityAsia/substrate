@@ -91,6 +91,7 @@ arg_enum! {
 		Ed25519,
 		Sr25519,
 		Ecdsa,
+		Sm2,
 	}
 }
 
